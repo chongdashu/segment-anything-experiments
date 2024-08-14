@@ -11,7 +11,7 @@ import io
 # Load the SAM2 model (you may want to do this outside the main app for efficiency)
 @st.cache_resource
 def load_model():
-    checkpoint = "./segment-anything-2/checkpoints/sam2_hiera_large.pt"
+    checkpoint = "../segment-anything-2/checkpoints/sam2_hiera_large.pt"
     model_cfg = "sam2_hiera_l.yaml"
     return SAM2ImagePredictor(build_sam2(model_cfg, checkpoint))
 

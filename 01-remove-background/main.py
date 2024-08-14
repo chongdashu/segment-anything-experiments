@@ -11,7 +11,7 @@ if image is None:
     raise ValueError("Image not loaded. Check the file path.")
 
 # Specify the checkpoint and model configuration
-checkpoint = "./segment-anything-2/checkpoints/sam2_hiera_large.pt"
+checkpoint = "../segment-anything-2/checkpoints/sam2_hiera_large.pt"
 model_cfg = "sam2_hiera_l.yaml"
 
 # Build the model
@@ -58,4 +58,3 @@ for index, mask in enumerate(masks):
 
     # Save the result as PNG to preserve transparency
     cv2.imwrite(f"output{index}.png", output_image)
-
