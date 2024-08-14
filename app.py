@@ -25,10 +25,16 @@ def segment_image(input_image, mask):
     if input_image.shape[2] == 4:
         input_image = input_image[:,:,:3]
     
-    # Prepare input prompts from the mask
-    y, x = np.where(mask > 0)
-    point_coords = np.array(list(zip(x, y)))
-    point_labels = np.ones(len(point_coords))
+    # Separate inclusion and exclusion points
+    inclusion_mask = np.all(mask == [255, 255, 255, 255], axis=-1)
+    exclusion_mask = np.all(mask == [255, 0, 0, 255], axis=-1)
+
+    inclusion_points = np.array(np.where(inclusion_mask)).T
+    exclusion_points = np.array(np.where(exclusion_mask)).T
+
+    # Combine points and labels
+    point_coords = np.vstack([inclusion_points, exclusion_points])
+    point_labels = np.array([1] * len(inclusion_points) + [0] * len(exclusion_points))
     
     # Reduce the number of points if there are too many
     if len(point_coords) > 500:
@@ -58,7 +64,7 @@ def segment_image(input_image, mask):
     return Image.fromarray(output_image)
 
 st.title("SAM2 Image Segmentation")
-st.write("Upload an image, use the brush to select the area you want to keep, and see the segmented result.")
+st.write("Upload an image, use the brushes to select areas to include (white) or exclude (red), and see the segmented result.")
 
 # File uploader
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
@@ -71,11 +77,17 @@ if uploaded_file is not None:
     # Slider for brush size
     brush_size = st.slider("Brush size", 1, 50, 20)
     
+    # Brush type selector
+    brush_type = st.radio("Brush type", ["Include", "Exclude"])
+    
+    # Set brush color based on type
+    stroke_color = "#ffffff" if brush_type == "Include" else "#ff0000"
+    
     # Create a canvas for drawing with a brush
     canvas_result = st_canvas(
-        fill_color="rgba(255, 255, 255, 0.3)",  # semi-transparent white
+        fill_color="rgba(255, 255, 255, 0.0)",  # Transparent fill
         stroke_width=brush_size,
-        stroke_color="#ffffff",
+        stroke_color=stroke_color,
         background_image=image,
         height=image.height,
         width=image.width,
@@ -86,7 +98,7 @@ if uploaded_file is not None:
     if st.button("Segment Image"):
         if canvas_result.image_data is not None:
             # Get the mask from the canvas
-            mask = canvas_result.image_data[:,:,3]  # Alpha channel
+            mask = canvas_result.image_data
             
             # Perform segmentation
             result = segment_image(image, mask)

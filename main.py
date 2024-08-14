@@ -39,22 +39,23 @@ with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
         point_labels=input_prompts["point_labels"]
     )
 
-# Assuming mask_2.png is the correct mask
-background_mask = masks[2]  # Select the third mask which seems to work best
+for index, mask in enumerate(masks):
 
-# Ensure `background_mask` is binary and convert to uint8
-background_mask = (background_mask > 0).astype(np.uint8) * 255  # Convert to 0 and 255
+    # Save the mask as a separate PNG file
+    cv2.imwrite(f"mask{index}.png", (mask * 255).astype(np.uint8))
 
-# Invert the mask if necessary (depends on whether you want to keep the cat or remove it)
-# inverted_mask = cv2.bitwise_not(background_mask)  # Uncomment if you need to invert
+    # Ensure `background_mask` is binary and convert to uint8
+    background_mask = (mask > 0).astype(np.uint8) * 255  # Convert to 0 and 255
 
-# Apply the mask to the image to remove the background
-background_removed_image = cv2.bitwise_and(image, image, mask=background_mask)
+    # Invert the mask if necessary (depends on whether you want to keep the cat or remove it)
+    # inverted_mask = cv2.bitwise_not(background_mask)  # Uncomment if you need to invert
 
-# Create an output image where the background is transparent (for PNG output)
-output_image = np.dstack([background_removed_image, background_mask])
+    # Apply the mask to the image to remove the background
+    background_removed_image = cv2.bitwise_and(image, image, mask=background_mask)
 
-# Save the result as PNG to preserve transparency
-cv2.imwrite('output.png', output_image)
+    # Create an output image where the background is transparent (for PNG output)
+    output_image = np.dstack([background_removed_image, background_mask])
 
-print("Image saved as output.png")
+    # Save the result as PNG to preserve transparency
+    cv2.imwrite(f"output{index}.png", output_image)
+
