@@ -31,7 +31,16 @@ except Exception as e:
     print("Please ensure the checkpoint file is in the correct location.")
     raise
 
+def ensure_rgb(image):
+    if image.shape[2] == 4:  # RGBA image
+        print("Converting RGBA image to RGB")
+        return image[:,:,:3]
+    return image
+
 def remove_background_points(image, points, labels):
+    # Ensure image is RGB
+    image = ensure_rgb(image)
+    
     # Convert inputs to numpy arrays
     points = np.array(points, dtype=np.float32)
     labels = np.array(labels, dtype=np.int32)
@@ -49,16 +58,20 @@ def remove_background_points(image, points, labels):
     mask = masks[0].astype(np.uint8) * 255
     mask_image = Image.fromarray(mask)
     image_pil = Image.fromarray(image)
-    image_pil.putalpha(mask_image)
+    processed_image = Image.new('RGBA', image_pil.size, (0, 0, 0, 0))
+    processed_image.paste(image_pil, mask=mask_image)
     
     # Create comparison image
     comparison = Image.new('RGB', (image.shape[1] * 2, image.shape[0]))
     comparison.paste(Image.fromarray(image), (0, 0))
-    comparison.paste(image_pil, (image.shape[1], 0))
+    comparison.paste(processed_image, (image.shape[1], 0))
     
-    return image_pil, comparison
+    return processed_image, comparison
 
 def remove_background_box(image, x1, y1, x2, y2):
+    # Ensure image is RGB
+    image = ensure_rgb(image)
+    
     # Prepare input
     input_box = np.array([x1, y1, x2, y2])
     
@@ -71,11 +84,12 @@ def remove_background_box(image, x1, y1, x2, y2):
     mask = masks[0].astype(np.uint8) * 255
     mask_image = Image.fromarray(mask)
     image_pil = Image.fromarray(image)
-    image_pil.putalpha(mask_image)
+    processed_image = Image.new('RGBA', image_pil.size, (0, 0, 0, 0))
+    processed_image.paste(image_pil, mask=mask_image)
     
     # Create comparison image
     comparison = Image.new('RGB', (image.shape[1] * 2, image.shape[0]))
     comparison.paste(Image.fromarray(image), (0, 0))
-    comparison.paste(image_pil, (image.shape[1], 0))
+    comparison.paste(processed_image, (image.shape[1], 0))
     
-    return image_pil, comparison
+    return processed_image, comparison
