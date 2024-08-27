@@ -5,7 +5,7 @@ from sam2.build_sam import build_sam2
 
 def find_checkpoint_path():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(os.path.join(current_dir, '..'))
+    project_root = os.path.abspath(os.path.join(current_dir, '..', ".."))
     checkpoint_path = os.path.join(project_root, 'segment-anything-2', 'checkpoints', 'sam2_hiera_large.pt')
     
     if not os.path.exists(checkpoint_path):
