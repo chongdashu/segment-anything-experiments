@@ -154,6 +154,34 @@ def create_output_frames(video_segments, input_folder, output_folder, frame_coun
 
     print(f"Frames with bounding boxes saved to {output_folder}")
 
+def create_erased_output_frames(video_segments, input_folder, output_folder, frame_count):
+    input_folder = Path(input_folder)
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    for i in range(frame_count):
+        frame_path = input_folder.joinpath(f"{i:05d}.jpg")
+        frame = cv2.imread(str(frame_path))
+
+        if i in video_segments:
+            mask = video_segments[i][1]
+
+            # Debug: Print mask shape and unique values
+            print(f"Frame {i}: Mask shape: {mask.shape}, Unique values: {np.unique(mask)}")
+
+            # Remove singleton dimensions if present
+            mask = np.squeeze(mask)
+
+            # Erase the object from the frame
+            frame_without_object = remove_object_from_frame(frame, mask)
+        else:
+            frame_without_object = frame
+
+        output_frame_path = output_folder.joinpath(f"{i:04d}.png")
+        cv2.imwrite(str(output_frame_path), frame_without_object)
+
+    print(f"Frames with erased objects saved to {output_folder}")
+
 def create_output_video(output_frames_dir, output_video_path, frame_rate=30):
     output_frames_dir = Path(output_frames_dir)
     output_video_path = Path(output_video_path)
