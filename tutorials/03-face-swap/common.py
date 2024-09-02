@@ -115,6 +115,56 @@ def visualize_mask_on_frame(frame, mask):
 
 from PIL import Image, ImageDraw
 
+def create_energy_trail_frames(video_segments, input_folder, output_folder, frame_count, trail_length=15):
+    input_folder = Path(input_folder)
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    recent_masks = []
+
+    # Create a larger kernel for a more pronounced glow effect
+    glow_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+
+    for i in range(frame_count):
+        frame_path = input_folder.joinpath(f"{i:05d}.jpg")
+        frame = cv2.imread(str(frame_path))
+
+        if i in video_segments:
+            mask = video_segments[i][1]
+            mask = np.squeeze(mask).astype(np.float32)
+
+            # Add current mask to recent masks
+            recent_masks.append(mask)
+            if len(recent_masks) > trail_length:
+                recent_masks.pop(0)
+
+            # Create energy trail effect
+            trail_mask = np.zeros_like(mask)
+            for j, old_mask in enumerate(recent_masks):
+                weight = (j + 1) / len(recent_masks)
+                trail_mask += old_mask * weight
+
+            # Normalize trail mask
+            trail_mask = cv2.normalize(trail_mask, None, 0, 1, cv2.NORM_MINMAX)
+
+            # Create glow effect
+            glow_mask = cv2.dilate(trail_mask, glow_kernel)
+            glow_mask = cv2.GaussianBlur(glow_mask, (21, 21), 0)
+
+            # Apply energy trail effect to frame
+            energy_color = np.array([255, 100, 0], dtype=np.float32)  # Blue color
+            glow_frame = frame.copy().astype(np.float32)
+
+            for c in range(3):
+                glow_frame[:,:,c] = frame[:,:,c] * (1 - glow_mask) + energy_color[c] * glow_mask
+
+            # Blend energy frame with original frame
+            frame = cv2.addWeighted(frame, 1, glow_frame.astype(np.uint8), 0.7, 0)
+
+        output_frame_path = output_folder.joinpath(f"{i:04d}.png")
+        cv2.imwrite(str(output_frame_path), frame)
+
+    print(f"Frames with energy trail effect saved to {output_folder}")
 
 def create_ghost_ball_frames(video_segments, input_folder, output_folder, frame_count, opacity=0.5, trail_length=10):
     input_folder = Path(input_folder)

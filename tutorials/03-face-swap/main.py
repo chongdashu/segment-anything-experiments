@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from common import (
     create_ghost_ball_frames,
+    create_energy_trail_frames,
     create_output_video,
     extract_frames,
     load_sam2_model,
@@ -77,7 +78,7 @@ def main():
     temp_folder = script_dir.joinpath("temp_frames")
     output_frames = script_dir.joinpath("output", "frames")
     visualization_output = script_dir.joinpath("output", "visualizations")
-    output_video_path = script_dir.joinpath("output", "basketball_ghost.mp4")
+    output_video_path = script_dir.joinpath("output", "basketball_energy.mp4")
 
     predictor = load_sam2_model()
 
@@ -97,7 +98,7 @@ def main():
     # Create output frames with bounding boxes
     # create_output_frames(video_segments, str(temp_folder), str(output_frames), frame_count)
     # create_erased_output_frames(video_segments, str(temp_folder), str(output_frames), frame_count)
-    create_ghost_ball_frames(video_segments, str(temp_folder), str(output_frames), frame_count)
+    create_energy_trail_frames(video_segments, str(temp_folder), str(output_frames), frame_count)
 
     print(f"Output frames with bounding boxes saved in directory: {output_frames}")
 
