@@ -1,18 +1,15 @@
 from pathlib import Path
-import cv2
 
 import matplotlib.pyplot as plt
 import numpy as np
 from common import (
-    create_erased_output_frames,
+    create_ghost_ball_frames,
     create_output_video,
-    create_output_frames,
     extract_frames,
     load_sam2_model,
     process_video,
     remove_object_from_frame,
 )
-
 
 
 def visualize_results(video_segments, temp_folder, frame_indices):
@@ -74,15 +71,13 @@ def visualize_results(video_segments, temp_folder, frame_indices):
         plt.show()
 
 
-
-
 def main():
     script_dir = Path(__file__).resolve().parent
-    video_path = script_dir.joinpath("videos", "basketball-short.mp4")
+    video_path = script_dir.joinpath("videos", "basketball.mp4")
     temp_folder = script_dir.joinpath("temp_frames")
     output_frames = script_dir.joinpath("output", "frames")
     visualization_output = script_dir.joinpath("output", "visualizations")
-    output_video_path = script_dir.joinpath("output", "basketball_erased.mp4")
+    output_video_path = script_dir.joinpath("output", "basketball_ghost.mp4")
 
     predictor = load_sam2_model()
 
@@ -101,7 +96,8 @@ def main():
 
     # Create output frames with bounding boxes
     # create_output_frames(video_segments, str(temp_folder), str(output_frames), frame_count)
-    create_erased_output_frames(video_segments, str(temp_folder), str(output_frames), frame_count)
+    # create_erased_output_frames(video_segments, str(temp_folder), str(output_frames), frame_count)
+    create_ghost_ball_frames(video_segments, str(temp_folder), str(output_frames), frame_count)
 
     print(f"Output frames with bounding boxes saved in directory: {output_frames}")
 
@@ -109,6 +105,7 @@ def main():
     create_output_video(output_frames, output_video_path)
 
     print(f"Output video  in directory: {output_video_path}")
+
 
 if __name__ == "__main__":
     main()

@@ -19,6 +19,7 @@ def find_checkpoint_path():
 
     return checkpoint_path
 
+
 def load_sam2_model():
     checkpoint = find_checkpoint_path()
     model_cfg = "sam2_hiera_l.yaml"
@@ -33,11 +34,13 @@ def load_sam2_model():
         print("Please ensure the checkpoint file is in the correct location.")
         raise
 
+
 def ensure_rgb(image):
     if image.shape[2] == 4:
         print("Converting RGBA image to RGB")
         return image[:, :, :3]
     return image
+
 
 def extract_frames(video_path, output_folder):
     output_folder = Path(output_folder)
@@ -53,6 +56,7 @@ def extract_frames(video_path, output_folder):
         frame_count += 1
     video.release()
     return frame_count
+
 
 def process_video(predictor, video_folder, object_points, object_labels):
     inference_state = predictor.init_state(video_path=str(video_folder))
@@ -74,6 +78,7 @@ def process_video(predictor, video_folder, object_points, object_labels):
         }
 
     return video_segments
+
 
 def remove_object_from_frame(frame, mask, inpaint_radius=5):
     # Ensure frame is in BGR format (3 channels)
@@ -98,16 +103,58 @@ def remove_object_from_frame(frame, mask, inpaint_radius=5):
 
     return frame_without_object
 
+
 def visualize_mask_on_frame(frame, mask):
     plt.figure(figsize=(10, 6))
     plt.title("Mask Overlay on Frame")
     plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    plt.imshow(mask, cmap='jet', alpha=0.5)  # Overlay mask in jet color
+    plt.imshow(mask, cmap="jet", alpha=0.5)  # Overlay mask in jet color
     plt.axis("off")
     plt.show()
 
-from pathlib import Path
+
 from PIL import Image, ImageDraw
+
+
+def create_ghost_ball_frames(video_segments, input_folder, output_folder, frame_count, opacity=0.5, trail_length=10):
+    input_folder = Path(input_folder)
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    recent_masks = []
+
+    for i in range(frame_count):
+        frame_path = input_folder.joinpath(f"{i:05d}.jpg")
+        frame = cv2.imread(str(frame_path))
+
+        if i in video_segments:
+            mask = video_segments[i][1]
+            mask = np.squeeze(mask).astype(np.float32)
+
+            recent_masks.append(mask)
+            if len(recent_masks) > trail_length:
+                recent_masks.pop(0)
+
+            ghost_mask = np.zeros_like(mask)
+            for j, old_mask in enumerate(recent_masks):
+                ghost_mask += old_mask * (opacity ** (len(recent_masks) - j - 1))
+
+            ghost_mask = np.clip(ghost_mask, 0, 1)
+
+            # Apply ghost effect to frame
+            ghost_frame = frame.copy().astype(np.float32)
+            yellow_tint = np.array([0, 255, 255], dtype=np.float32)
+
+            mask_3d = np.repeat(ghost_mask[:, :, np.newaxis], 3, axis=2)
+            ghost_frame = ghost_frame * (1 - mask_3d * opacity) + yellow_tint * (mask_3d * opacity)
+
+            frame = cv2.addWeighted(frame, 1, ghost_frame.astype(np.uint8), 1, 0)
+
+        output_frame_path = output_folder.joinpath(f"{i:04d}.png")
+        cv2.imwrite(str(output_frame_path), frame)
+
+    print(f"Frames with ghost ball effect saved to {output_folder}")
+
 
 def create_output_frames(video_segments, input_folder, output_folder, frame_count):
     input_folder = Path(input_folder)
@@ -154,6 +201,7 @@ def create_output_frames(video_segments, input_folder, output_folder, frame_coun
 
     print(f"Frames with bounding boxes saved to {output_folder}")
 
+
 def create_erased_output_frames(video_segments, input_folder, output_folder, frame_count):
     input_folder = Path(input_folder)
     output_folder = Path(output_folder)
@@ -182,6 +230,7 @@ def create_erased_output_frames(video_segments, input_folder, output_folder, fra
 
     print(f"Frames with erased objects saved to {output_folder}")
 
+
 def create_output_video(output_frames_dir, output_video_path, frame_rate=30):
     output_frames_dir = Path(output_frames_dir)
     output_video_path = Path(output_video_path)
@@ -198,7 +247,7 @@ def create_output_video(output_frames_dir, output_video_path, frame_rate=30):
     height, width, _ = first_frame.shape
 
     # Create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out = cv2.VideoWriter(str(output_video_path), fourcc, frame_rate, (width, height))
 
     # Write frames to video
