@@ -86,6 +86,8 @@ def main():
     video_path = script_dir.joinpath("videos", "basketball-short.mp4")
     temp_folder = script_dir.joinpath("temp_frames")
     output_frames = script_dir.joinpath("output", "frames")
+    visualization_output = script_dir.joinpath("output", "visualizations")
+    output_video_path = script_dir.joinpath("output", "basketball_tracked.mp4")
 
     predictor = load_sam2_model()
 
@@ -106,6 +108,11 @@ def main():
     create_output_frames(video_segments, str(temp_folder), str(output_frames), frame_count)
 
     print(f"Output frames with bounding boxes saved in directory: {output_frames}")
+
+    # Create output video
+    create_output_video(output_frames, output_video_path)
+
+    print(f"Output video  in directory: {output_video_path}")
 
 if __name__ == "__main__":
     main()

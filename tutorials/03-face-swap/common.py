@@ -154,25 +154,31 @@ def create_output_frames(video_segments, input_folder, output_folder, frame_coun
 
     print(f"Frames with bounding boxes saved to {output_folder}")
 
-def create_output_video(video_segments, input_folder, output_path, frame_count):
-    input_folder = Path(input_folder)
-    first_frame = cv2.imread(str(input_folder.joinpath("00000.jpg")))
-    height, width = first_frame.shape[:2]
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    out = cv2.VideoWriter(str(output_path), fourcc, 30, (width, height))
+def create_output_video(output_frames_dir, output_video_path, frame_rate=30):
+    output_frames_dir = Path(output_frames_dir)
+    output_video_path = Path(output_video_path)
 
-    for i in range(frame_count):
-        frame_path = input_folder.joinpath(f"{i:05d}.jpg")
-        frame = cv2.imread(str(frame_path))
-        if frame is None:
-            print(f"Failed to read frame: {frame_path}")
-            continue
+    # Get the list of frame files
+    frame_files = sorted(output_frames_dir.glob("*.png"))
 
-        if i in video_segments:
-            mask = video_segments[i][1]
-            frame = remove_object_from_frame(frame, mask)
+    if not frame_files:
+        print("No frames found in the output directory.")
+        return
 
+    # Read the first frame to get the frame size
+    first_frame = cv2.imread(str(frame_files[0]))
+    height, width, _ = first_frame.shape
+
+    # Create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(str(output_video_path), fourcc, frame_rate, (width, height))
+
+    # Write frames to video
+    for frame_file in frame_files:
+        frame = cv2.imread(str(frame_file))
         out.write(frame)
 
+    # Release the VideoWriter
     out.release()
-    print(f"Video saved to {output_path}")
+
+    print(f"Output video saved to: {output_video_path}")
