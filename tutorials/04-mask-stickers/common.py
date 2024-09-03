@@ -4,6 +4,7 @@ import os
 import torch
 import numpy as np
 from PIL import Image
+import cv2
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from sam2.build_sam import build_sam2
@@ -78,6 +79,13 @@ def show_mask(mask, ax, random_color=False):
     mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
     ax.imshow(mask_image)
 
+def save_mask(mask, filename, output_dir):
+    """Saves a single mask as a PNG file."""
+    os.makedirs(output_dir, exist_ok=True)
+    filepath = os.path.join(output_dir, filename)
+    cv2.imwrite(filepath, mask)
+    print(f"Saved mask to {filepath}")
+
 def create_sticker(image, selected_masks):
     combined_mask = np.logical_or.reduce(selected_masks)
     sticker = np.zeros_like(image)
@@ -85,10 +93,11 @@ def create_sticker(image, selected_masks):
     return Image.fromarray(sticker)
 
 def save_output(fig, filename, output_dir):
-    os.makedirs(output_dir, exist_ok=True)
-    fig.savefig(os.path.join(output_dir, filename))
-    plt.close(fig)
-    print(f"Saved {filename} to {output_dir}")
+    """Saves the figure without extra whitespace."""
+    filepath = os.path.join(output_dir, filename)
+    fig.savefig(filepath, bbox_inches='tight', pad_inches=0)
+    plt.close(fig)  # Close the figure to free memory
+    print(f"Saved figure to {filepath}")
 
 def save_sticker(sticker, filename, output_dir):
     os.makedirs(output_dir, exist_ok=True)

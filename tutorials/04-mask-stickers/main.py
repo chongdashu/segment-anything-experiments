@@ -1,6 +1,8 @@
 # main.py
 
 import os
+import numpy as np
+import cv2
 
 from common import (
     create_sticker,
@@ -9,6 +11,7 @@ from common import (
     plot_masks,
     save_output,
     save_sticker,
+    save_mask
 )
 from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
 
@@ -16,23 +19,25 @@ from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
 def main():
     # Set up output directory
     output_dir = os.path.join(os.getcwd(), "output")
+    masks_dir = os.path.join(output_dir, "masks")
     os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(masks_dir, exist_ok=True)
 
     # Load the SAM2 model
     sam2_model = load_sam2_model()
 
     # Load the image
-    image = load_image("cake.jpg")
+    image = load_image("food.jpg")
 
     # Create the mask generator
     mask_generator = SAM2AutomaticMaskGenerator(
         sam2_model,
-        points_per_side=32,
-        pred_iou_thresh=0.8,
-        stability_score_thresh=0.95,
+        points_per_side=32,  # Increase to capture more details
+        pred_iou_thresh=0.8,   # Lower threshold to be more inclusive
+        stability_score_thresh=0.9,
         crop_n_layers=1,
-        crop_n_points_downscale_factor=2,
-        min_mask_region_area=100,
+        crop_n_points_downscale_factor=1,  # Increase points in cropped regions
+        min_mask_region_area=100,   # Lower to capture smaller areas
     )
 
     # Generate masks
@@ -49,13 +54,22 @@ def main():
 
     # Print information about each mask
     for i, mask in enumerate(masks):
+        # Create a blank mask image
+        mask_image = np.zeros_like(image)
+
+        # Apply the mask to the blank image
+        mask_image[mask["segmentation"]] = image[mask["segmentation"]]
+
+        # Save the mask
+        save_mask(mask_image, f"{i}.png", masks_dir)
+
         print(f"Mask {i}:")
         print(f"  Predicted IOU: {mask['predicted_iou']:.2f}")
         print(f"  Stability Score: {mask['stability_score']:.2f}")
         print(f"  Area: {mask['area']}")
 
     # Simulate user selection (in a real app, this would be interactive)
-    selected_indices = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 14, 19, 20, 21]
+    selected_indices = [0, 1, 2, 3, 4, 5]
     selected_masks = [masks[i]["segmentation"] for i in selected_indices]
 
     print(f"\nSelected mask indices: {selected_indices}")
