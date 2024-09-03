@@ -1,11 +1,12 @@
-import torch
-from sam2.build_sam import build_sam2
-from sam2.sam2_image_predictor import SAM2ImagePredictor
 import cv2
 import numpy as np
+import torch
+
+from sam2.build_sam import build_sam2
+from sam2.sam2_image_predictor import SAM2ImagePredictor
 
 # Load the image
-image = cv2.imread('input.png')
+image = cv2.imread("input.png")
 
 if image is None:
     raise ValueError("Image not loaded. Check the file path.")
@@ -19,28 +20,28 @@ predictor = SAM2ImagePredictor(build_sam2(model_cfg, checkpoint))
 
 # Refined input prompts
 input_prompts = {
-    "point_coords": np.array([
-        [150, 200],  # Cat's body (positive)
-        [320, 180],  # Cat's tail (positive)
-        [60, 100],   # Background (negative)
-        [450, 350],  # Background (negative)
-        [100, 50],   # Background (negative)
-        [200, 400],  # Cat's leg (positive)
-        [400, 150]   # Background (negative)
-    ]),
-    "point_labels": np.array([1, 1, 0, 0, 0, 1, 0])  # 1 for object, 0 for background
+    "point_coords": np.array(
+        [
+            [150, 200],  # Cat's body (positive)
+            [320, 180],  # Cat's tail (positive)
+            [60, 100],  # Background (negative)
+            [450, 350],  # Background (negative)
+            [100, 50],  # Background (negative)
+            [200, 400],  # Cat's leg (positive)
+            [400, 150],  # Background (negative)
+        ]
+    ),
+    "point_labels": np.array([1, 1, 0, 0, 0, 1, 0]),  # 1 for object, 0 for background
 }
 
 # Set the image and predict the mask
 with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
     predictor.set_image(image)
     masks, _, _ = predictor.predict(
-        point_coords=input_prompts["point_coords"], 
-        point_labels=input_prompts["point_labels"]
+        point_coords=input_prompts["point_coords"], point_labels=input_prompts["point_labels"]
     )
 
 for index, mask in enumerate(masks):
-
     # Save the mask as a separate PNG file
     cv2.imwrite(f"mask{index}.png", (mask * 255).astype(np.uint8))
 

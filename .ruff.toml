@@ -1,53 +1,57 @@
-# Enable pycodestyle ('E'), Pyflakes ('F'), isort ('I'), and pep8-naming ('N') rules
-select = ["E", "F", "I", "N"]
-ignore = []
 
-# Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
-unfixable = []
-
-# Exclude a variety of commonly ignored directories.
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-]
-
-# Same as Black.
-line-length = 120
-
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
+# Target Python version
 target-version = "py311"
 
-[mccabe]
-# Unlike Flake8, default to a complexity level of 10.
+# Exclude commonly ignored directories
+exclude = [
+    ".bzr", ".direnv", ".eggs", ".git", ".hg", ".mypy_cache", ".nox", ".pants.d", ".pytype", ".ruff_cache", 
+    ".svn", ".tox", ".venv", "__pypackages__", "_build", "buck-out", "build", "dist", "node_modules", "venv", 
+    "segment-anything-2"
+]
+
+# Line length setting (same as Black)
+line-length = 120
+
+# Linting Configuration
+
+[lint]
+
+# Allow unused variables when underscore-prefixed
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Allow autofix for all enabled rules when `--fix` is provided
+fixable = [
+    "A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", 
+    "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", 
+    "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"
+]
+
+# Enable specific rules
+select = ["E", "F", "I", "N"]
+
+# Ignore specific rules (currently empty)
+ignore = []
+
+# Unfixable rules (currently empty)
+unfixable = []
+
+
+
+
+# McCabe Complexity Checker
+[lint.mccabe]
+# Set a complexity level of 10
 max-complexity = 10
 
-[isort]
+# isort Configuration
+[lint.isort]
 known-first-party = ["sam2"]
 
-[flake8-tidy-imports]
+# flake8-tidy-imports Configuration
+[lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[per-file-ignores]
+# Per-File Ignores
+[lint.per-file-ignores]
 # Tests can use assert statements and relative imports
 "tests/**/*" = ["S101", "TID252"]

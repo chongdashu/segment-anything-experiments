@@ -1,6 +1,6 @@
 import os
 
-import lightning as L
+import lightning as L  # noqa: N812
 import torch
 
 from sam2.build_sam import build_sam2
@@ -28,7 +28,7 @@ def confirm_setup():
     assert os.path.exists(checkpoint_path), f"Checkpoint not found at {checkpoint_path}"
 
     print("Building SAM2 model...")
-    model = build_sam2("sam2_hiera_l.yaml", checkpoint_path)
+    build_sam2("sam2_hiera_l.yaml", checkpoint_path)
     print("SAM2 model built successfully!")
 
     print("All checks passed! You're ready for the tutorials!")

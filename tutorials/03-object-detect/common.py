@@ -1,8 +1,10 @@
 from pathlib import Path
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from PIL import Image, ImageDraw
 
 from sam2.build_sam import build_sam2_video_predictor
 
@@ -114,9 +116,6 @@ def visualize_mask_on_frame(frame, mask):
     plt.show()
 
 
-from PIL import Image, ImageDraw
-
-
 def create_energy_trail_frames(video_segments, input_folder, output_folder, frame_count, trail_length=15):
     input_folder = Path(input_folder)
     output_folder = Path(output_folder)
@@ -158,7 +157,7 @@ def create_energy_trail_frames(video_segments, input_folder, output_folder, fram
             glow_frame = frame.copy().astype(np.float32)
 
             for c in range(3):
-                glow_frame[:,:,c] = frame[:,:,c] * (1 - glow_mask) + energy_color[c] * glow_mask
+                glow_frame[:, :, c] = frame[:, :, c] * (1 - glow_mask) + energy_color[c] * glow_mask
 
             # Blend energy frame with original frame
             frame = cv2.addWeighted(frame, 1, glow_frame.astype(np.uint8), 0.7, 0)
@@ -167,6 +166,7 @@ def create_energy_trail_frames(video_segments, input_folder, output_folder, fram
         cv2.imwrite(str(output_frame_path), frame)
 
     print(f"Frames with energy trail effect saved to {output_folder}")
+
 
 def create_ghost_ball_frames(video_segments, input_folder, output_folder, frame_count, opacity=0.5, trail_length=10):
     input_folder = Path(input_folder)

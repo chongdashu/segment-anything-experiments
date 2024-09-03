@@ -6,7 +6,7 @@ from common import remove_background_box, remove_background_points
 def process_points(image_data):
     points = []
     labels = []
-    
+
     # Ensure layers exist and contain brush strokes
     if "layers" in image_data and image_data["layers"]:
         for layer in image_data["layers"]:
@@ -24,6 +24,7 @@ def process_points(image_data):
     processed_image, comparison = remove_background_points(image_data["background"], points, labels)
     return processed_image, comparison
 
+
 def process_box(image_data):
     if "layers" in image_data and len(image_data["layers"]) > 0:
         # Assuming the first layer contains the bounding box
@@ -37,36 +38,36 @@ def process_box(image_data):
                 return processed_image, comparison
     return image_data["background"], image_data["background"]  # If no box is drawn, return original image
 
+
 def create_gradio_app():
     # Interface for points-based background removal
     iface_points = gr.Interface(
         fn=process_points,
         inputs=[
-            gr.ImageEditor(type="numpy", label="Upload Product Image and Place Points", brush=gr.Brush(colors=["#00FF00"]))
+            gr.ImageEditor(
+                type="numpy", label="Upload Product Image and Place Points", brush=gr.Brush(colors=["#00FF00"])
+            )
         ],
-        outputs=[
-            gr.Image(type="pil", label="Processed Image"),
-            gr.Image(type="pil", label="Before/After Comparison")
-        ],
+        outputs=[gr.Image(type="pil", label="Processed Image"), gr.Image(type="pil", label="Before/After Comparison")],
         title="Product Background Removal with Points",
-        description="Upload a product image and place points to remove the background. Use the green brush to mark foreground areas."
+        description="Upload an image and place points to remove bg. Use the green brush to mark foreground areas.",
     )
 
     # Interface for box-based background removal
     iface_box = gr.Interface(
         fn=process_box,
         inputs=[
-            gr.ImageEditor(type="numpy", label="Upload Product Image and Draw a Box", brush=gr.Brush(colors=["#00FF00"]))
+            gr.ImageEditor(
+                type="numpy", label="Upload Product Image and Draw a Box", brush=gr.Brush(colors=["#00FF00"])
+            )
         ],
-        outputs=[
-            gr.Image(type="pil", label="Processed Image"),
-            gr.Image(type="pil", label="Before/After Comparison")
-        ],
+        outputs=[gr.Image(type="pil", label="Processed Image"), gr.Image(type="pil", label="Before/After Comparison")],
         title="Product Background Removal with Box",
-        description="Upload a product image and draw a bounding box to remove the background. Use the green brush to draw a box around the object."
+        description="Upload an image and draw a bounding box to remove the background.",
     )
 
     return gr.TabbedInterface([iface_points, iface_box], ["Points-based", "Box-based"])
+
 
 demo = create_gradio_app()
 

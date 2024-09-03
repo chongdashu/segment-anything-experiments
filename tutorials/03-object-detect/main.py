@@ -76,7 +76,7 @@ def main():
     video_path = script_dir.joinpath("videos", "basketball.mp4")
     temp_folder = script_dir.joinpath("temp_frames")
     output_frames = script_dir.joinpath("output", "frames")
-    visualization_output = script_dir.joinpath("output", "visualizations")
+    # visualization_output = script_dir.joinpath("output", "visualizations")
     output_video_path = script_dir.joinpath("output", "basketball_tracked.mp4")
 
     predictor = load_sam2_model()
