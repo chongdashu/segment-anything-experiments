@@ -1,8 +1,10 @@
 import os
-import numpy as np
-from PIL import Image
-from common import remove_background_points, remove_background_box
+
 import matplotlib.pyplot as plt
+import numpy as np
+from common import remove_background_box, remove_background_points
+from PIL import Image
+
 
 def find_input_image(filename='input.png'):
     current_dir = os.path.dirname(os.path.abspath(__file__))

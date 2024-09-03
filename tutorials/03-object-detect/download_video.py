@@ -1,6 +1,7 @@
+import os
 import urllib.request
 import zipfile
-import os
+
 
 def download_example_video():
     # Set the current directory to the script's directory

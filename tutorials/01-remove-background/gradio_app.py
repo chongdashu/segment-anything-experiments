@@ -1,6 +1,7 @@
 import gradio as gr
 import numpy as np
-from common import remove_background_points, remove_background_box
+from common import remove_background_box, remove_background_points
+
 
 def process_points(image_data):
     points = []

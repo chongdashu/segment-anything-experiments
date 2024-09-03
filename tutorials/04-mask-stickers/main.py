@@ -1,18 +1,8 @@
-# main.py
-
 import os
-import numpy as np
-import cv2
 
-from common import (
-    create_sticker,
-    load_image,
-    load_sam2_model,
-    plot_masks,
-    save_output,
-    save_sticker,
-    save_mask
-)
+import numpy as np
+from common import create_sticker, load_image, load_sam2_model, plot_masks, save_mask, save_output, save_sticker
+
 from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
 
 

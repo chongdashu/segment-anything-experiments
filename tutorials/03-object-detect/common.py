@@ -3,6 +3,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torch
+
 from sam2.build_sam import build_sam2_video_predictor
 
 
@@ -114,6 +115,7 @@ def visualize_mask_on_frame(frame, mask):
 
 
 from PIL import Image, ImageDraw
+
 
 def create_energy_trail_frames(video_segments, input_folder, output_folder, frame_count, trail_length=15):
     input_folder = Path(input_folder)

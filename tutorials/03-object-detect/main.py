@@ -3,10 +3,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from common import (
-    create_ghost_ball_frames,
-    create_energy_trail_frames,
-    create_output_video,
     create_output_frames,
+    create_output_video,
     extract_frames,
     load_sam2_model,
     process_video,

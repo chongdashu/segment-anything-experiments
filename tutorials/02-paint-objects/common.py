@@ -1,9 +1,12 @@
 import os
-import torch
+
 import numpy as np
+import torch
 from PIL import Image
+
 from sam2.build_sam import build_sam2
 from sam2.sam2_image_predictor import SAM2ImagePredictor
+
 
 def find_checkpoint_path():
     current_dir = os.path.dirname(os.path.abspath(__file__))

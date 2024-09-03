@@ -1,14 +1,15 @@
 # common.py
 
 import os
-import torch
+
+import cv2
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-import cv2
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+
 from sam2.build_sam import build_sam2
-from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
+
 
 def find_checkpoint_path():
     current_dir = os.path.dirname(os.path.abspath(__file__))
