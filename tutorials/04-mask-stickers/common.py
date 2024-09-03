@@ -5,6 +5,7 @@ import torch
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 from sam2.build_sam import build_sam2
 from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
 
@@ -49,8 +50,22 @@ def load_image(filename='input.png'):
 def plot_masks(image, masks, scores):
     plt.figure(figsize=(10, 10))
     plt.imshow(image)
-    for mask, score in zip(masks, scores):
+    for i, (mask, score) in enumerate(zip(masks, scores)):
         show_mask(mask, plt.gca(), random_color=True)
+
+        # Find the center of the mask
+        y, x = np.where(mask)
+        if len(y) > 0 and len(x) > 0:
+            center_y, center_x = int(np.mean(y)), int(np.mean(x))
+
+            # Add a white circle as background for the text
+            circle = patches.Circle((center_x, center_y), radius=10, fill=True, color='white', alpha=0.7)
+            plt.gca().add_patch(circle)
+
+            # Add the index number
+            plt.text(center_x, center_y, str(i), color='black', fontsize=8,
+                     ha='center', va='center', fontweight='bold')
+
     plt.axis('off')
     return plt.gcf()
 

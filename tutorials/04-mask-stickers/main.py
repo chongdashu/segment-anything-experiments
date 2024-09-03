@@ -1,8 +1,17 @@
 # main.py
 
 import os
-from common import load_sam2_model, load_image, plot_masks, create_sticker, save_output, save_sticker
+
+from common import (
+    create_sticker,
+    load_image,
+    load_sam2_model,
+    plot_masks,
+    save_output,
+    save_sticker,
+)
 from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
+
 
 def main():
     # Set up output directory
@@ -13,7 +22,7 @@ def main():
     sam2_model = load_sam2_model()
 
     # Load the image
-    image = load_image('cake.jpg')
+    image = load_image("cake.jpg")
 
     # Create the mask generator
     mask_generator = SAM2AutomaticMaskGenerator(
@@ -29,23 +38,33 @@ def main():
     # Generate masks
     masks = mask_generator.generate(image)
 
-    # Plot masks
-    fig = plot_masks(image, [mask['segmentation'] for mask in masks], [mask['predicted_iou'] for mask in masks])
+    # Plot masks with indices
+    fig = plot_masks(image, [mask["segmentation"] for mask in masks], [mask["predicted_iou"] for mask in masks])
 
     # Save the plot
-    save_output(fig, 'detected_masks.png', output_dir)
+    save_output(fig, "detected_masks.png", output_dir)
 
     print(f"Detected {len(masks)} objects in the image.")
-    print("Masks visualization saved as 'detected_masks.png'")
+    print("Masks visualization with indices saved as 'detected_masks.png'")
+
+    # Print information about each mask
+    for i, mask in enumerate(masks):
+        print(f"Mask {i}:")
+        print(f"  Predicted IOU: {mask['predicted_iou']:.2f}")
+        print(f"  Stability Score: {mask['stability_score']:.2f}")
+        print(f"  Area: {mask['area']}")
 
     # Simulate user selection (in a real app, this would be interactive)
-    selected_indices = [0, 2, 4]  # Example: select the 1st, 3rd, and 5th masks
-    selected_masks = [masks[i]['segmentation'] for i in selected_indices]
+    selected_indices = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 14, 19, 20, 21]
+    selected_masks = [masks[i]["segmentation"] for i in selected_indices]
+
+    print(f"\nSelected mask indices: {selected_indices}")
 
     # Create sticker
     sticker = create_sticker(image, selected_masks)
-    save_sticker(sticker, 'sticker.png', output_dir)
+    save_sticker(sticker, "sticker.png", output_dir)
     print("Sticker created and saved as 'sticker.png'")
+
 
 if __name__ == "__main__":
     main()
