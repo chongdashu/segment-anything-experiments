@@ -1,9 +1,9 @@
 import json
 import os
 
-from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
+from common import plot_masks, save_mask, save_output
 
-from .common import plot_masks, save_mask, save_output
+from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
 
 
 def run_mask_generation_experiment(image, sam2_model, params, output_dir):
@@ -23,7 +23,7 @@ def run_mask_generation_experiment(image, sam2_model, params, output_dir):
     masks = mask_generator.generate(image)
 
     # Create a unique identifier for this experiment
-    experiment_id = f"exp_{hash(json.dumps(params, sort_keys=True))}"
+    experiment_id = f"exp_{abs(hash(json.dumps(params, sort_keys=True)))}"
 
     # Save masks
     mask_filenames = []

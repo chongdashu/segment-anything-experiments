@@ -2,7 +2,8 @@ import json
 import os
 from itertools import product
 
-from common import load_image, load_sam2_model, run_mask_generation_experiment, save_experiment_results
+from common import load_image, load_sam2_model
+from experiments import run_mask_generation_experiment, save_experiment_results
 
 
 def generate_experiments():
@@ -56,7 +57,7 @@ def load_existing_experiments(output_dir):
 def main():
     # Load model and image
     sam2_model = load_sam2_model()
-    image = load_image("input.png")
+    image = load_image("input.jpg")
 
     # Define output directory
     output_dir = "experiment_output"
