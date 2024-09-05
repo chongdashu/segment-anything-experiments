@@ -9,8 +9,8 @@ from experiments import run_mask_generation_experiment, save_experiment_results
 def generate_experiments():
     # Define parameter ranges for the ones we want to vary
     points_per_side_range = [16, 32, 64]
-    pred_iou_thresh_range = [0.9]
-    stability_score_thresh_range = [0.95]
+    pred_iou_thresh_range = [0.8]
+    stability_score_thresh_range = [0.9]
     # pred_iou_thresh_range = [0.7, 0.8, 0.9]
     # stability_score_thresh_range = [0.85, 0.9, 0.95]
 
