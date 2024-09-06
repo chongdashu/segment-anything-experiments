@@ -2,11 +2,8 @@ import json
 import os
 
 import gradio as gr
-import numpy as np
-from experiments import load_experiment_result
 from PIL import Image
 
-# Get the directory where the script is located
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -18,84 +15,68 @@ def load_results(output_dir):
     return []
 
 
-def display_experiment(output_dir, selected_experiment):
+def display_experiment(output_dir, points_per_side, pred_iou_thresh, stability_score_thresh):
+    results = load_results(output_dir)
+
+    # Find the experiment with the selected parameters
+    selected_experiment = next(
+        (
+            r
+            for r in results
+            if r["params"]["points_per_side"] == points_per_side
+            and abs(r["params"]["pred_iou_thresh"] - pred_iou_thresh) < 0.01
+            and abs(r["params"]["stability_score_thresh"] - stability_score_thresh) < 0.01
+        ),
+        None,
+    )
+
     if not selected_experiment:
-        return None, None, "No experiment selected"
-
-    params = json.loads(selected_experiment)
-    result = load_experiment_result(os.path.join(SCRIPT_DIR, output_dir), params)
-
-    if result is None:
-        return None, None, "Experiment result not found"
+        return None, "No experiment found for the selected parameters"
 
     # Load and display visualization
-    vis_path = os.path.join(SCRIPT_DIR, result["visualization_path"])
-    if vis_path and os.path.exists(vis_path):
+    vis_filename = selected_experiment["visualization_filename"]
+    vis_path = os.path.join(SCRIPT_DIR, output_dir, selected_experiment["experiment_id"], vis_filename)
+
+    if os.path.exists(vis_path):
         vis_image = Image.open(vis_path)
     else:
-        vis_image = None
-
-    # Load and display first mask
-    if result["mask_paths"]:
-        mask_path = os.path.join(SCRIPT_DIR, result["mask_paths"][0])
-        mask = np.array(Image.open(mask_path))
-
-        # Handle different mask data types
-        if mask.dtype == bool:
-            mask = mask.astype(np.uint8) * 255
-        elif mask.dtype == np.uint8:
-            mask = mask
-        else:
-            mask = (mask > 0).astype(np.uint8) * 255
-
-        if len(mask.shape) == 3 and mask.shape[2] == 1:
-            mask = mask.squeeze(2)
-
-        mask_image = Image.fromarray(mask).convert("RGB")
-    else:
-        mask_image = None
+        return None, f"Visualization not found at {vis_path}"
 
     # Prepare experiment details
-    details = f"Experiment ID: {result['experiment_id']}\n"
+    details = f"Experiment ID: {selected_experiment['experiment_id']}\n"
     details += "Parameters:\n"
-    for key, value in result["params"].items():
+    for key, value in selected_experiment["params"].items():
         details += f"  {key}: {value}\n"
-    details += f"Number of masks: {len(result['mask_paths'])}\n"
+    details += f"Number of masks: {len(selected_experiment['mask_filenames'])}\n"
 
-    return vis_image, mask_image, details
-
-
-def update_experiment_list(output_dir):
-    results = load_results(output_dir)
-    return gr.Dropdown.update(choices=[json.dumps(r["params"]) for r in results])
+    return vis_image, details
 
 
 # Set up the Gradio interface
-output_dir = "experiment_output"  # This is now relative to the script location
-
 with gr.Blocks() as demo:
     gr.Markdown("# SAM2 Mask Generation Experiment Viewer")
 
     with gr.Row():
-        output_dir_input = gr.Textbox(label="Output Directory", value=output_dir)
-        refresh_button = gr.Button("Refresh Experiments")
-
-    experiment_dropdown = gr.Dropdown(choices=[], label="Select Experiment")
+        output_dir_input = gr.Textbox(label="Output Directory", value="experiment_output")
+        points_per_side_input = gr.Dropdown(choices=[16, 32, 64], label="Points per Side", value=32)
+        pred_iou_thresh_input = gr.Slider(
+            minimum=0.7, maximum=0.95, step=0.05, label="Predicted IoU Threshold", value=0.8
+        )
+        stability_score_thresh_input = gr.Slider(
+            minimum=0.7, maximum=0.95, step=0.05, label="Stability Score Threshold", value=0.9
+        )
 
     with gr.Row():
         vis_image = gr.Image(label="Visualization")
-        mask_image = gr.Image(label="Sample Mask")
 
     experiment_details = gr.Textbox(label="Experiment Details", lines=10)
 
     # Set up interactions
-    refresh_button.click(update_experiment_list, inputs=[output_dir_input], outputs=[experiment_dropdown])
+    inputs = [output_dir_input, points_per_side_input, pred_iou_thresh_input, stability_score_thresh_input]
+    outputs = [vis_image, experiment_details]
 
-    experiment_dropdown.change(
-        display_experiment,
-        inputs=[output_dir_input, experiment_dropdown],
-        outputs=[vis_image, mask_image, experiment_details],
-    )
+    for input_component in inputs[1:]:  # Exclude output_dir_input
+        input_component.change(display_experiment, inputs=inputs, outputs=outputs)
 
 # Launch the app
 if __name__ == "__main__":
