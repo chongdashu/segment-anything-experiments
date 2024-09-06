@@ -6,9 +6,12 @@ import numpy as np
 from experiments import load_experiment_result
 from PIL import Image
 
+# Get the directory where the script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def load_results(output_dir):
-    results_file = os.path.join(output_dir, "experiment_results.json")
+    results_file = os.path.join(SCRIPT_DIR, output_dir, "experiment_results.json")
     if os.path.exists(results_file):
         with open(results_file, "r") as f:
             return json.load(f)
@@ -20,13 +23,13 @@ def display_experiment(output_dir, selected_experiment):
         return None, None, "No experiment selected"
 
     params = json.loads(selected_experiment)
-    result = load_experiment_result(output_dir, params)
+    result = load_experiment_result(os.path.join(SCRIPT_DIR, output_dir), params)
 
     if result is None:
         return None, None, "Experiment result not found"
 
     # Load and display visualization
-    vis_path = result["visualization_path"]
+    vis_path = os.path.join(SCRIPT_DIR, result["visualization_path"])
     if vis_path and os.path.exists(vis_path):
         vis_image = Image.open(vis_path)
     else:
@@ -34,9 +37,21 @@ def display_experiment(output_dir, selected_experiment):
 
     # Load and display first mask
     if result["mask_paths"]:
-        mask_path = result["mask_paths"][0]
+        mask_path = os.path.join(SCRIPT_DIR, result["mask_paths"][0])
         mask = np.array(Image.open(mask_path))
-        mask_image = Image.fromarray((mask > 0) * 255).convert("RGB")
+
+        # Handle different mask data types
+        if mask.dtype == bool:
+            mask = mask.astype(np.uint8) * 255
+        elif mask.dtype == np.uint8:
+            mask = mask
+        else:
+            mask = (mask > 0).astype(np.uint8) * 255
+
+        if len(mask.shape) == 3 and mask.shape[2] == 1:
+            mask = mask.squeeze(2)
+
+        mask_image = Image.fromarray(mask).convert("RGB")
     else:
         mask_image = None
 
@@ -56,7 +71,7 @@ def update_experiment_list(output_dir):
 
 
 # Set up the Gradio interface
-output_dir = "experiment_output"  # Update this to your actual output directory
+output_dir = "experiment_output"  # This is now relative to the script location
 
 with gr.Blocks() as demo:
     gr.Markdown("# SAM2 Mask Generation Experiment Viewer")
@@ -83,4 +98,5 @@ with gr.Blocks() as demo:
     )
 
 # Launch the app
-demo.launch()
+if __name__ == "__main__":
+    demo.launch()
