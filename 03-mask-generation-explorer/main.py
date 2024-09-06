@@ -7,39 +7,51 @@ from experiments import run_mask_generation_experiment, save_experiment_results
 
 
 def generate_experiments():
-    # Define parameter ranges for the ones we want to vary
-    points_per_side_range = [16, 32, 64]
-    pred_iou_thresh_range = [0.8, 0.85, 0.9]
-    stability_score_thresh_range = [0.85, 0.9, 0.95]
-    # pred_iou_thresh_range = [0.7, 0.8, 0.9]
-    # stability_score_thresh_range = [0.85, 0.9, 0.95]
+    # Define parameter ranges
+    points_per_side_range = [32]
+    pred_iou_thresh_range = [0.8]
+    stability_score_thresh_range = [0.9]
+    use_m2m_range = [False, True]
+    min_mask_region_area_range = [0, 100, 1000]
+    points_per_batch_range = [64]
 
     # Define default values for other parameters
     default_params = {
-        "points_per_batch": 64,
-        "pred_iou_thresh": 0.8,
-        "stability_score_thresh": 0.95,
         "stability_score_offset": 1.0,
         "box_nms_thresh": 0.7,
         "crop_n_layers": 0,
         "crop_nms_thresh": 0.7,
         "crop_overlap_ratio": 512 / 1500,
         "crop_n_points_downscale_factor": 1,
-        "min_mask_region_area": 0,
         "output_mode": "binary_mask",
-        "use_m2m": False,
         "multimask_output": True,
     }
 
     # Generate all combinations of the parameters we're varying
-    all_combinations = list(product(points_per_side_range, pred_iou_thresh_range, stability_score_thresh_range))
+    all_combinations = list(
+        product(
+            points_per_side_range,
+            pred_iou_thresh_range,
+            stability_score_thresh_range,
+            use_m2m_range,
+            min_mask_region_area_range,
+            points_per_batch_range,
+        )
+    )
 
     # Create experiments list
     experiments = []
     for combo in all_combinations:
         experiment = default_params.copy()
         experiment.update(
-            {"points_per_side": combo[0], "pred_iou_thresh": combo[1], "stability_score_thresh": combo[2]}
+            {
+                "points_per_side": combo[0],
+                "pred_iou_thresh": combo[1],
+                "stability_score_thresh": combo[2],
+                "use_m2m": combo[3],
+                "min_mask_region_area": combo[4],
+                "points_per_batch": combo[5],
+            }
         )
         experiments.append(experiment)
 

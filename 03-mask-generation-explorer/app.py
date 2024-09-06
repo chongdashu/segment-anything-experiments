@@ -15,7 +15,15 @@ def load_results(output_dir):
     return []
 
 
-def display_experiment(output_dir, points_per_side, pred_iou_thresh, stability_score_thresh):
+def display_experiment(
+    output_dir,
+    points_per_side,
+    pred_iou_thresh,
+    stability_score_thresh,
+    use_m2m,
+    min_mask_region_area,
+    points_per_batch,
+):
     results = load_results(output_dir)
 
     # Find the experiment with the selected parameters
@@ -26,6 +34,9 @@ def display_experiment(output_dir, points_per_side, pred_iou_thresh, stability_s
             if r["params"]["points_per_side"] == points_per_side
             and abs(r["params"]["pred_iou_thresh"] - pred_iou_thresh) < 0.01
             and abs(r["params"]["stability_score_thresh"] - stability_score_thresh) < 0.01
+            and r["params"]["use_m2m"] == use_m2m
+            and r["params"]["min_mask_region_area"] == min_mask_region_area
+            and r["params"]["points_per_batch"] == points_per_batch
         ),
         None,
     )
@@ -53,18 +64,23 @@ def display_experiment(output_dir, points_per_side, pred_iou_thresh, stability_s
 
 
 # Set up the Gradio interface
+output_dir = "experiment_output"  # This is now relative to the script location
+
 with gr.Blocks() as demo:
     gr.Markdown("# SAM2 Mask Generation Experiment Viewer")
 
     with gr.Row():
-        output_dir_input = gr.Textbox(label="Output Directory", value="experiment_output")
+        output_dir_input = gr.Textbox(label="Output Directory", value=output_dir)
         points_per_side_input = gr.Dropdown(choices=[16, 32, 64], label="Points per Side", value=32)
-        pred_iou_thresh_input = gr.Slider(
-            minimum=0.7, maximum=0.95, step=0.05, label="Predicted IoU Threshold", value=0.8
+        pred_iou_thresh_input = gr.Dropdown(choices=[0.8, 0.85, 0.9], label="Predicted IoU Threshold", value=0.8)
+        stability_score_thresh_input = gr.Dropdown(
+            choices=[0.85, 0.9, 0.95], label="Stability Score Threshold", value=0.9
         )
-        stability_score_thresh_input = gr.Slider(
-            minimum=0.7, maximum=0.95, step=0.05, label="Stability Score Threshold", value=0.9
-        )
+
+    with gr.Row():
+        use_m2m_input = gr.Checkbox(label="Use Mask-to-Mask Refinement", value=False)
+        min_mask_region_area_input = gr.Dropdown(choices=[0, 100, 1000], label="Minimum Mask Region Area", value=0)
+        points_per_batch_input = gr.Dropdown(choices=[32, 64, 128], label="Points per Batch", value=64)
 
     with gr.Row():
         vis_image = gr.Image(label="Visualization")
@@ -72,10 +88,19 @@ with gr.Blocks() as demo:
     experiment_details = gr.Textbox(label="Experiment Details", lines=10)
 
     # Set up interactions
-    inputs = [output_dir_input, points_per_side_input, pred_iou_thresh_input, stability_score_thresh_input]
+    inputs = [
+        output_dir_input,
+        points_per_side_input,
+        pred_iou_thresh_input,
+        stability_score_thresh_input,
+        use_m2m_input,
+        min_mask_region_area_input,
+        points_per_batch_input,
+    ]
     outputs = [vis_image, experiment_details]
 
-    for input_component in inputs[1:]:  # Exclude output_dir_input
+    # Update visualization when any input changes
+    for input_component in inputs:
         input_component.change(display_experiment, inputs=inputs, outputs=outputs)
 
 # Launch the app
