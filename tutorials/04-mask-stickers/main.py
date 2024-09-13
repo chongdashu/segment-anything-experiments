@@ -17,17 +17,19 @@ def main():
     sam2_model = load_sam2_model()
 
     # Load the image
-    image = load_image("food.jpg")
+    image = load_image("breakfast.jpg")
 
     # Create the mask generator
     mask_generator = SAM2AutomaticMaskGenerator(
         sam2_model,
-        points_per_side=32,  # Increase to capture more details
-        pred_iou_thresh=0.8,   # Lower threshold to be more inclusive
-        stability_score_thresh=0.9,
-        crop_n_layers=1,
-        crop_n_points_downscale_factor=1,  # Increase points in cropped regions
-        min_mask_region_area=100,   # Lower to capture smaller areas
+        points_per_side=20,  # Increased to capture more details
+        pred_iou_thresh=0.97,  # Slightly reduced to include more masks
+        stability_score_thresh=0.95,  # Slightly reduced to include more stable masks
+        crop_n_layers=0,  # No cropping to prevent additional masks
+        min_mask_region_area=1000,  # Reduced to capture smaller elements
+        box_nms_thresh=0.95,  # Keeping it strict to reduce overlap
+        crop_overlap_ratio=512 / 1200,  # Keeping the same
+        use_m2m=True,  # Enable mask refinement
     )
 
     # Generate masks

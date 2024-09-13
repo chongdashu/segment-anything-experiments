@@ -1,5 +1,3 @@
-# common.py
-
 import os
 
 import cv2
