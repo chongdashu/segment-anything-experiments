@@ -60,7 +60,7 @@ def main():
         print(f"  Area: {mask['area']}")
 
     # Simulate user selection (in a real app, this would be interactive)
-    selected_indices = [0, 1, 2, 3, 4, 5]
+    selected_indices = list(range(1, 14)) + [22, 23]
     selected_masks = [masks[i]["segmentation"] for i in selected_indices]
 
     print(f"\nSelected mask indices: {selected_indices}")
