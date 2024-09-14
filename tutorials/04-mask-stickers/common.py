@@ -85,10 +85,23 @@ def save_mask(mask, filename, output_dir):
     cv2.imwrite(filepath, mask)
     print(f"Saved mask to {filepath}")
 
-def create_sticker(image, selected_masks):
+def create_sticker(image, selected_masks, border_thickness=10):
     combined_mask = np.logical_or.reduce(selected_masks)
-    sticker = np.zeros_like(image)
+    
+    # Create a white background with the same size as the image
+    sticker = np.ones_like(image) * 255
+    
+    # Apply the mask to the image
     sticker[combined_mask] = image[combined_mask]
+    
+    # Create a border around the sticker
+    border_mask = np.pad(combined_mask, pad_width=border_thickness, mode='constant', constant_values=False)
+    border_mask = border_mask[border_thickness:-border_thickness, border_thickness:-border_thickness]
+    border_mask = np.logical_and(border_mask, ~combined_mask)
+    
+    # Apply the border to the sticker
+    sticker[border_mask] = 255  # White border
+    
     return Image.fromarray(sticker)
 
 def save_output(fig, filename, output_dir):
